@@ -28,6 +28,26 @@ app.use("/payment", paymentRouter);
 
 let URI = process.env.MONGODB_URI;
 
+require("dotenv").config();
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_PROD_URL,
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: false,
+  }),
+);
+
 mongoose
   .connect(URI)
   .then(() => {
