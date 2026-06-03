@@ -13,6 +13,17 @@ const getPaystackHeaders = () => ({
 
 const createOrderNumber = () => `JUMIA-${Date.now()}`;
 
+const getFrontendCallbackUrl = () => {
+  if (process.env.NODE_ENV === "production" && process.env.FRONTEND_PROD_URL) {
+    return `${process.env.FRONTEND_PROD_URL.replace(/\/$/, "")}/checkout`;
+  }
+
+  return (
+    process.env.FRONTEND_CALLBACK_URL ||
+    `${(process.env.FRONTEND_URL || "").replace(/\/$/, "")}/checkout`
+  );
+};
+
 const getCartTotal = (items) =>
   items.reduce(
     (total, item) => total + (item.product?.salesprice || 0) * item.quantity,
@@ -30,7 +41,8 @@ const initializePayment = async (req, res) => {
         .json({ status: false, message: "Paystack secret key is not set" });
     }
 
-    if (!process.env.FRONTEND_CALLBACK_URL) {
+    const callbackUrl = getFrontendCallbackUrl();
+    if (!callbackUrl) {
       return res
         .status(500)
         .json({ status: false, message: "Frontend callback URL is not set" });
@@ -75,7 +87,6 @@ const initializePayment = async (req, res) => {
     }
 
     const reference = `JUMIA-${Date.now()}-${userId}`;
-    const callbackUrl = process.env.FRONTEND_CALLBACK_URL;
 
     const paystackResponse = await axios.post(
       `${paystackBaseUrl}/transaction/initialize`,

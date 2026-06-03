@@ -12,6 +12,7 @@ const productRouter = require("./routes/product.route");
 const cartRouter = require("./routes/cart.route");
 const addressRouter = require("./routes/address.route");
 const paymentRouter = require("./routes/payment.route");
+const orderRouter = require("./routes/order.route");
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/products", productRouter);
 app.use("/cart", cartRouter);
 app.use("/address", addressRouter);
 app.use("/payment", paymentRouter);
+app.use("/orders", orderRouter);
 
 let URI = process.env.MONGODB_URI;
 
