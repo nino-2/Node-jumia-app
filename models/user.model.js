@@ -14,19 +14,28 @@ const userSchema = mongoose.Schema({
     type: String,
   },
   birthdate: { type: String },
+  resetCode: { type: String, default: null },
+  resetCodeExpires: { type: Date, default: null },
 });
+
 let saltRound = 10;
 userSchema.pre("save", function (next) {
+  if (!this.isModified("password")) return next();
   console.log(this.password);
   bcrypt.hash(this.password, saltRound, (err, hashedPassword) => {
-    if (err) {
-      console.log("hash not successful");
-    } else {
-      console.log(hashedPassword);
-      this.password = hashedPassword;
-      next();
-    }
+    if (err) return next(err);
+    this.password = hashedPassword;
+    next();
   });
+  // bcrypt.hash(this.password, saltRound, (err, hashedPassword) => {
+  //   if (err) {
+  //     console.log("hash not successful");
+  //   } else {
+  //     console.log(hashedPassword);
+  //     this.password = hashedPassword;
+  //     next();
+  //   }
+  // });
 });
 
 userSchema.methods.validatePassword = function (password, callback) {

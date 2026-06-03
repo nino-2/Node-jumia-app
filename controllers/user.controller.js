@@ -2,404 +2,297 @@ const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
-// const registerUser = async (req, res) => {
-//   let { email, password } = req.body;
-//   try {
-//     const existingUser = await userModel.findOne({ email });
 
-//     if (existingUser) {
-//       return res
-//         .status(400)
-//         .json({ status: false, message: "Email already in use" });
-//     }
-//     let form = new userModel({ email, password });
-//     await form.save();
-//     res
-//       .status(201)
-//       .json({ status: true, message: "Step 1: Proceed to the next step" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ status: false, message: "Internal Server Error" });
-//   }
-// };
+// Signup
+const registerUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Email already in use" });
+    }
 
-const registerUser = (req, res) => {
-  let { email, password } = req.body;
-  userModel
-    .findOne({ email })
-    .then((user) => {
-      if (user) {
-        return res
-          .status(400)
-          .json({ status: false, message: "Email already in use" });
-      }
-      let form = new userModel({ email, password });
-      form.save();
-    })
-    .then(() => {
-      res
-        .status(201)
-        .json({ status: true, message: "Step 1: Proceed to the next step" });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+    const form = new userModel({ email, password });
+    await form.save();
+
+    return res
+      .status(201)
+      .json({ status: true, message: "Step 1: Proceed to the next step" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal Server Error" });
+  }
 };
-// const updateUser = async (req, res) => {
-//   try {
-//     let { email, firstname, lastname, phonenumber } = req.body;
 
-//     let user = await userModel.findOneAndUpdate(
-//       { email },
-//       { firstname, lastname, phonenumber },
-//       { new: true, select: "-password" }
-//     );
-
-//     if (!user) {
-//       return res.send({ status: false, message: "User not found" });
-//     }
-//     return res.send({ status: true, message: "Step 2 completed, One more" });
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
-const updateUser = (req, res) => {
-  let { email, firstname, lastname, phonenumber } = req.body;
-  userModel
-    .findOneAndUpdate(
+// Update user
+const updateUser = async (req, res) => {
+  const { email, firstname, lastname, phonenumber } = req.body;
+  try {
+    const user = await userModel.findOneAndUpdate(
       { email },
       { firstname, lastname, phonenumber },
       { new: true, select: "-password" }
-    )
-    .then((user) => {
-      if (!user) {
-        return res.send({ status: false, message: "User not found" });
-      } else {
-        return res.send({
-          status: true,
-          message: "Step 2 completed, One more",
-        });
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+    );
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    return res.json({ status: true, message: "Step 2 completed, One more" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };
-// const updatedUser = async (req, res) => {
-//   try {
-//     let { email, gender, birthdate } = req.body;
 
-//     let user = await userModel.findOneAndUpdate(
-//       { email },
-//       { gender, birthdate },
-//       { new: true, select: "-password" }
-//     );
-
-//     if (!user) {
-//       return res.send({ status: false, message: "User not found" });
-//     }
-//     return res.send({
-//       status: true,
-//       message: "User registered successfully",
-//     });
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-const updatedUser = (req, res) => {
-  let { email, gender, birthdate } = req.body;
-  userModel
-    .findOneAndUpdate(
+// Update user
+const updatedUser = async (req, res) => {
+  const { email, gender, birthdate } = req.body;
+  try {
+    const user = await userModel.findOneAndUpdate(
       { email },
       { gender, birthdate },
       { new: true, select: "-password" }
-    )
-    .then((user) => {
-      if (!user) {
-        return res.send({ status: false, message: "User not found" });
-      } else {
-        return res.send({
-          status: true,
-          message: "User registered successfully",
-        });
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+    );
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    return res.json({ status: true, message: "User registered successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };
 
-// const checkUser = async (req, res) => {
-//   let { email } = req.body;
-//   try {
-//     let user = await userModel.findOne({ email });
-//     if (user) {
-//       return res.status(200).json({ status: true, message: "User exists" });
-//     } else {
-//       return res
-//         .status(200)
-//         .json({ status: false, message: "User does not exist" });
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+// Check user
+const checkUser = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
 
-const checkUser = (req, res) => {
-  let { email } = req.body;
-  userModel
-    .findOne({ email })
-    .then((user) => {
-      if (user) {
-        return res.status(200).json({ status: true, message: "User exists" });
-      } else {
-        return res
-          .status(200)
-          .json({ status: false, message: "User does not exist" });
-      }
-    })
-    .catch((error) => {
-      console.log(error);
+    return res.status(200).json({
+      status: !!user,
+      message: user ? "User exists" : "User does not exist",
     });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };
-// const confirmUser = async (req, res) => {
-//   console.log(req.body);
-//   let { email } = req.body;
-//   try {
-//     let user = await userModel.findOne({ email });
-//     if (user) {
-//       user.validatePassword(req.body.password, (err, same) => {
-//         if (err) {
-//           console.log(err);
-//         } else {
-//           if (same) {
-//             return res.status(200).json({
-//               status: true,
-//               message: "proceed to dash",
-//               user: { firstname: user.firstname },
-//             });
-//           }
-//           return res
-//             .status(400)
-//             .json({ status: false, message: "Incorrect password" });
-//         }
-//       });
-//     }
-//   } catch (error) {
-//     console.log(error, "Wrong Credentials");
-//     return res
-//       .status(404)
-//       .json({ status: false, message: "Wrong credentials" });
-//   }
-// };
-const confirmUser = (req, res) => {
-  let { email } = req.body;
-  userModel
-    .findOne({ email })
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(404)
-          .json({ status: false, message: "User not found" });
+
+// Login
+const confirmUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ status: false, message: "Invalid password" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, firstname: user.firstname },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
       }
-      user.validatePassword(req.body.password, (err, same) => {
-        if (err) {
-          console.log(err);
-        }
-        if (!same) {
-          return res
-            .status(401)
-            .json({ status: false, message: "Invalid password" });
-        }
-        let token = jwt.sign(
-          { id: user._id, firstname: user.firstname },
-          "secret",
-          {
-            expiresIn: "10h",
-          }
-        );
-        return res.status(200).json({
-          status: true,
-          message: "user found",
-          firstname: user.firstname,
-          token,
-        });
-      });
-    })
-    .catch((error) => {
-      console.log(error, "Server error");
-      return res.status(505).json({ status: false, message: "Server error" });
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "User found",
+      firstname: user.firstname,
+      email: user.email,
+      token,
     });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };
-// const dashUser = (req, res) => {
-//   let token = req.headers.authorization.split(" ")[1];
-//   jwt.verify(token, "secret", (err, result) => {
-//     if (err) {
-//       console.log(err);
-//       return res.send({ status: false, message: "inavlid" });
-//     } else {
-//       console.log(result);
-//       return res.send({ status: true, message: "successful" });
-//     }
-//   });
-// };
-const requestUser = (req, res) => {
-  let { email } = req.body;
-  userModel
-    .findOne({ email })
-    .then((user) => {
-      if (!user) {
-        return res.send({ status: false, message: "Email not registered" });
-      }
-      let now = Date.now();
-      if (user.lastOtpRequest && now - user.lastOtpRequest < 60000) {
-        return res.status(429).json({
-          status: false,
-          message: "Please wait before requesting a new code.",
-        });
-      }
-      const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
-      user.resetCode = resetCode;
-      user.resetCodeExpires = Date.now() + 1 * 60 * 1000;
-      user.lastOtpRequest = now;
 
-      return user.save().then(() => user);
-    })
-    .then((user) => {
-      var transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASS,
-        },
-      });
+const logoutUser = async (req, res) => {
+  res.status(200).json({ status: true, message: "Logged out successfully" });
+};
 
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "Password Reset Code",
-        text: `Your reset code is: ${user.resetCode}`,
-      };
-      return transporter.sendMail(mailOptions);
-    })
-    .then(() => {
-      res.send({ status: true, message: "Reset code sent to email" });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.send({
+// Profile
+const userProfile = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ status: false, message: "user not found" });
+    }
+    res.status(200).json({
+      status: true,
+      user: {
+        id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
+};
+
+// Request Password
+const requestUser = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Email not registered" });
+    }
+
+    const now = Date.now();
+    if (user.lastOtpRequest && now - user.lastOtpRequest < 60000) {
+      return res.status(429).json({
         status: false,
-        message: "server error",
-        error: error.message,
+        message: "Please wait before requesting a new code.",
       });
+    }
+
+    const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
+    user.resetCode = resetCode;
+    user.resetCodeExpires = now + 1 * 60 * 1000;
+    user.lastOtpRequest = now;
+
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
+      },
     });
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: user.email,
+      subject: "Password Reset Code",
+      text: `Your reset code is: ${resetCode}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.json({ status: true, message: "Reset code sent to email" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };
+
+// Verify Password
 const verifyUser = (req, res) => {
   let { email, resetCode } = req.body;
   userModel
     .findOne({ email })
     .then((user) => {
       if (!user) {
-        console.log("email not registered");
+        console.log(`user not found with ${email}`);
         return res
           .status(404)
           .json({ status: false, message: "Email not registered" });
       }
 
+      console.log(`Verifying reset code for ${email}`);
+      console.log(
+        `Received reset code: ${resetCode}, Stored reset code: ${user.resetCode}`
+      );
+
       if (user.resetCodeExpires < Date.now()) {
-        console.log("code expired");
+        console.log("Reset code expired");
+        user.resetCode = null; // Clear expired code
+        user.resetCodeExpires = null;
+        return user.save().then(() => {
+          res.status(400).json({
+            status: false,
+            message: "Reset code expired. Request a new one.",
+          });
+        });
+      }
+
+      if (String(user.resetCode) !== String(resetCode)) {
+        console.log("invalid reset code");
         return res
           .status(400)
-          .json({ status: false, message: "Reset code expired" });
+          .json({ status: false, message: "Invalid reset code" });
       }
-      // if (user.resetCode !== resetCode) {
-      //   console.log("invalid");
-      //   return res
-      //     .status(400)
-      //     .json({ status: false, message: "Invalid reset code" });
-      // }
-      console.log("proceed");
-      res.status(200).json({
-        status: true,
-        message: "Reset code verified. You can reset your password now.",
+
+      // Clear reset code after successful verification
+      user.resetCode = null;
+      user.resetCodeExpires = null;
+      return user.save().then(() => {
+        console.log("reset code verified");
+        res.status(200).json({
+          status: true,
+          message: "Reset code verified. You can reset your password now.",
+        });
       });
     })
     .catch((error) => {
-      console.log(error);
+      console.error("Server error:", error);
       res
         .status(500)
         .json({ status: false, message: "Server error", error: error.message });
     });
 };
-// const resetUser = (req, res) => {
-//   let { email, newPassword } = req.body;
-//   userModel
-//     .findOne({ email })
-//     .then((user) => {
-//       if (!user) {
-//         return res.status(404).json({ message: "Email not registered" });
-//       }
 
-//       if (user.resetCodeExpires < Date.now()) {
-//         return res.status(400).json({ message: "Reset code expired" });
-//       }
-//       bcrypt.hash(newPassword, 10)
-//       .then((hashedPassword) => {
-//         user.password = hashedPassword;
-//         user.resetCode = null;
-//         user.resetCodeExpires = null;
-//         return user.save();
-//       });
-//     })
-//     .then(() => {
-//       res.status(200).json({ message: "Password reset successful" });
-//     })
-//     .catch((error) => {
-//       console.log(error);
-//       res.status(500).json({ message: "Server error", error: error.message });
-//     });
-// };
-const resetUser = (req, res) => {
-  let { email, newPassword } = req.body;
+// Reset Password
+const resetUser = async (req, res) => {
+  const { email, newPassword } = req.body;
   if (!newPassword) {
     return res.status(400).json({ message: "New password is required" });
   }
-  userModel
-    .findOne({ email })
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.password = newPassword;
+    user.resetCode = null;
+    user.resetCodeExpires = null;
+    await user.save();
+
+    const token = jwt.sign(
+      { id: user._id, firstname: user.firstname },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "15m",
       }
-      bcrypt.hash(newPassword, 10).then((hashedPassword) => {
-        userModel.findOneAndUpdate(
-          { email },
-          { password: hashedPassword, resetCode: null, resetCodeExpires: null },
-          { new: true }
-        );
-      });
-    })
-    .then(() => {
-      let token = jwt.sign(
-        { id: updatedUser._id, firstname: updatedUser.firstname },
-        "SECRETTT",
-        {
-          expiresIn: "10h",
-        }
-      );
-      res
-        .status(200)
-        .json({
-          status: true,
-          message: "Password reset successful",
-          firstname: updatedUser.firstname,
-          token,
-        });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.status(500).json({ message: "Server error", error: error.message });
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Password reset successful",
+      firstname: user.firstname,
+      token,
     });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
 };
 
 module.exports = {
@@ -408,6 +301,8 @@ module.exports = {
   updatedUser,
   checkUser,
   confirmUser,
+  logoutUser,
+  userProfile,
   requestUser,
   verifyUser,
   resetUser,

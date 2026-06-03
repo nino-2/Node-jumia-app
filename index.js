@@ -8,12 +8,24 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const userRouter = require("./routes/user.route");
 const stateRouter = require("./routes/state.route");
+const productRouter = require("./routes/product.route");
+const cartRouter = require("./routes/cart.route");
+const addressRouter = require("./routes/address.route");
+const paymentRouter = require("./routes/payment.route");
+
+dotenv.config();
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use("/user", userRouter);
 app.use("/api", stateRouter);
-dotenv.config();
+app.use("/products", productRouter);
+app.use("/cart", cartRouter);
+app.use("/address", addressRouter);
+app.use("/payment", paymentRouter);
+
 let URI = process.env.MONGODB_URI;
 
 mongoose
